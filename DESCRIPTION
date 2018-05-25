@@ -9,3 +9,4 @@ Description: Ananyse the chnage in mean grade by distance from a categorical
 License: MIT
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.0.1
