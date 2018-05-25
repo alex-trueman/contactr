@@ -14,6 +14,10 @@
 #'
 #' @return A list of two dataframes. Detail contains un-averaged raw data. Summary is averaged by distance.
 #' @export
+#' @import dplyr
+#' @importFrom magrittr %>%
+#' @importFrom stats var
+#' @importFrom rlang enquo
 #'
 contact_analysis <- function(df, id, pos, type, type1, type2, value, max_dist = 50) {
 
