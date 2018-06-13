@@ -7,7 +7,7 @@
 contact_analysis(df, id, pos, type, type1, type2, value, max_dist = 50)
 }
 \arguments{
-\item{df}{Dataframe containing sample data with required fields.}
+\item{df}{Data frame containing sample data with required fields.}
 
 \item{id}{ID code for line or drillhole (e.g., bhid).}
 
@@ -19,15 +19,19 @@ contact_analysis(df, id, pos, type, type1, type2, value, max_dist = 50)
 
 \item{type2}{Type code 2 for analysis, will have positive distance in final data.}
 
-\item{value}{A vaue field such as grade to analyse.}
+\item{value}{A value field such as grade to analyse.}
 
 \item{max_dist}{Maximum contact evaluation distance (default is 50 m)}
 }
 \value{
-A list of two dataframes. Detail contains un-averaged raw data. Summary is averaged by distance.
+A list of two data frames. Detail contains un-averaged raw data. Summary is averaged by distance.
 }
 \description{
 Generate contact analysis data from samples.
+}
+\examples{
+x <-  dplyr::mutate(dholes, depth = (to - from) / 2)
+contact_analysis(x, bhid, depth, domain, 1100, 1001, grade)
 }
 \author{
 Alex M. Trueman, 2018-03-21
