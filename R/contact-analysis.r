@@ -3,31 +3,33 @@
 #' Generate contact analysis data from samples.
 #' @author Alex M. Trueman, 2018-03-21
 #'
-#' @param df Dataframe containing sample data with required fields.
+#' @param df Data frame containing sample data with required fields.
 #' @param id ID code for line or drillhole (e.g., bhid).
 #' @param pos Position of sample along the hole (i.e., depth; [to - from] / 2)
 #' @param type Domain or zone code field (character or numeric field)
 #' @param type1 Type code 1 for analysis, will have negative distance in final data.
 #' @param type2 Type code 2 for analysis, will have positive distance in final data.
-#' @param value A vaue field such as grade to analyse.
+#' @param value A value field such as grade to analyse.
 #' @param max_dist Maximum contact evaluation distance (default is 50 m)
 #'
-#' @return A list of two dataframes. Detail contains un-averaged raw data. Summary is averaged by distance.
+#' @return A list of two data frames. Detail contains un-averaged raw data. Summary is averaged by distance.
 #' @export
 #' @import dplyr
 #' @importFrom magrittr %>%
 #' @importFrom stats var
 #' @importFrom rlang enquo
-#'
+#' @examples
+#' x <-  dplyr::mutate(dholes, depth = (to - from) / 2)
+#' contact_analysis(x, bhid, depth, domain, 1100, 1001, grade)
 contact_analysis <- function(df, id, pos, type, type1, type2, value, max_dist = 50) {
 
-  # Capture passed dataframe fields as R code rather than literal values.
+  # Capture passed data frame fields as R code rather than literal values.
   id = enquo(id)
   pos = enquo(pos)
   type = enquo(type)
   value = enquo(value)
 
-  # Process the input dataframe.
+  # Process the input data frame.
   data <- df %>%
 
     # Sort by hole id and sample position.
@@ -41,7 +43,7 @@ contact_analysis <- function(df, id, pos, type, type1, type2, value, max_dist = 
       t1_t2_lr = case_when(
         # Find a type 1 code where the next code is type 2 set variable to difference in position.
         !! type == type1 & lead(!! type, 1) == type2 ~ lead(!! pos, 1) - !! pos,
-        # Repaet above but for two samples ahead, then three, up to ten...
+        # Repeat above but for two samples ahead, then three, up to ten...
         !! type == type1 & lead(!! type, 2) == type2 ~ lead(!! pos, 2) - !! pos,
         !! type == type1 & lead(!! type, 3) == type2 ~ lead(!! pos, 3) - !! pos,
         !! type == type1 & lead(!! type, 4) == type2 ~ lead(!! pos, 4) - !! pos,
