@@ -15,16 +15,17 @@ contact_analysis(df, id, pos, type, type1, type2, value, max_dist = 50)
 
 \item{type}{Domain or zone code field (character or numeric field)}
 
-\item{type1}{Type code 1 for analysis, will have negative distance in final data.}
+\item{type1}{Type code 1 for analysis, negative distance in final data.}
 
-\item{type2}{Type code 2 for analysis, will have positive distance in final data.}
+\item{type2}{Type code 2 for analysis, positive distance in final data.}
 
 \item{value}{A value field such as grade to analyse.}
 
 \item{max_dist}{Maximum contact evaluation distance (default is 50 m)}
 }
 \value{
-A list of two data frames. Detail contains un-averaged raw data. Summary is averaged by distance.
+A list of two data frames. Detail contains un-averaged raw data.
+    Summary is averaged by distance.
 }
 \description{
 Generate contact analysis data from samples.
