@@ -2,37 +2,45 @@
 % Please edit documentation in R/contact-analysis.r
 \name{contact_analysis}
 \alias{contact_analysis}
-\title{Generate contact analysis data from samples.}
+\title{Generate Contact Analysis Data from Drilhole Samples.}
 \usage{
-contact_analysis(df, id, pos, type, type1, type2, value, max_dist = 50)
+contact_analysis(x, id, pos, group, codes, value, max_dist = 50)
 }
 \arguments{
-\item{df}{Data frame containing sample data with required fields.}
+\item{x}{Data frame containing sample data with required fields identified in
+the following arguments.}
 
-\item{id}{ID code for line or drillhole (e.g., bhid).}
+\item{id}{Name of column in \code{x} containing numeric or character ID code
+for each line or drillhole (e.g., bhid).}
 
-\item{pos}{Position of sample along the hole (i.e., depth; [to - from] / 2)}
+\item{pos}{Name of column in \code{x} containing the numeric downhole depth
+to the samples (i.e., depth; \code{[to - from] / 2})}
 
-\item{type}{Domain or zone code field (character or numeric field)}
+\item{group}{Name of column in \code{x} contaning the numeric or character
+categorical code for the domains whose contacts are to be analysed.}
 
-\item{type1}{Type code 1 for analysis, negative distance in final data.}
+\item{codes}{Numeric or character vector with two values identifying the two
+specific groups in \code{group} that will have their contacts analysed.}
 
-\item{type2}{Type code 2 for analysis, positive distance in final data.}
+\item{value}{Name of numeric column in \code{x} that will be analysed across
+the contacts of \code{codes}.}
 
-\item{value}{A value field such as grade to analyse.}
-
-\item{max_dist}{Maximum contact evaluation distance (default is 50 m)}
+\item{max_dist}{Numeric, scalar maximum contact evaluation distance (default
+is 50 m)}
 }
 \value{
-A list of two data frames. Detail contains un-averaged raw data.
-    Summary is averaged by distance.
+A list of two data frames: 'detail' contains un-averaged raw data and
+  'summary' is averaged by distance.
 }
 \description{
-Generate contact analysis data from samples.
+\code{contat_analysis} calculates the change in the mean of samples for a
+specified value (e.g., grade) with distance eiter side of the contact between
+two domins.
 }
 \examples{
 x <-  dplyr::mutate(dholes, depth = (to - from) / 2)
-contact_analysis(x, bhid, depth, domain, 1100, 1001, grade)
+domains <- c(1100, 1001)
+contact_analysis(x, bhid, depth, domain, domains, grade, 20)
 }
 \author{
 Alex M. Trueman, 2018-03-21
