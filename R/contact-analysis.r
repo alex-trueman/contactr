@@ -69,7 +69,7 @@ contact_analysis <- function(
 
   # Process the input data frame.
   data <- x %>%
-    # Sort by hole id and sample position.
+    # Sort by hole ID and sample position.
     arrange(!!id, !!pos) %>%
     # Group by hole as analysis is per hole.
     group_by(!!id) %>%
