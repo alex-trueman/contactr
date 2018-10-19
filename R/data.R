@@ -1,8 +1,12 @@
 #' Drillhole data
 #'
-#' Example drillhole data for providing examples of contact analysis.
+#' Drillhole data for providing examples of contact analysis.
 #'
-#' @format A data frame with 11 variables:
+#' @docType data
+#'
+#' @usage data(dholes)
+#'
+#' @format A data frame with 24,673 rows and 11 columns:
 #' \describe{
 #' \item{\code{bhid}}{Drillhole identification}
 #' \item{\code{from}}{Downhole depth to top of sample}
@@ -13,7 +17,7 @@
 #' \item{\code{z}}{Elevation coordinate of sample centroid}
 #' \item{\code{dip}}{Sample dip from horizontal (positive down)}
 #' \item{\code{dipdir}}{Dip direction}
-#' \item{\code{domain}}{Mineralization domain code}
-#' \item{\code{grade}}{Measured grade of sample}
+#' \item{\code{domain}}{Stationary estimation domain code}
+#' \item{\code{grade}}{Measured grade (concentration) of metal}
 #' }
 "dholes"
