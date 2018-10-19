@@ -1,131 +1,198 @@
-# Functions for contact analysis.
-
-#' Generate contact analysis data from samples.
+#' Generate Contact Analysis Data from Drilhole Samples.
+#'
+#' \code{contat_analysis} calculates the change in the mean of samples for a
+#' specified value (e.g., grade) with distance eiter side of the contact between
+#' two domins.
+#'
 #' @author Alex M. Trueman, 2018-03-21
 #'
-#' @param df Data frame containing sample data with required fields.
-#' @param id ID code for line or drillhole (e.g., bhid).
-#' @param pos Position of sample along the hole (i.e., depth; [to - from] / 2)
-#' @param type Domain or zone code field (character or numeric field)
-#' @param type1 Type code 1 for analysis, negative distance in final data.
-#' @param type2 Type code 2 for analysis, positive distance in final data.
-#' @param value A value field such as grade to analyse.
-#' @param max_dist Maximum contact evaluation distance (default is 50 m)
-#'
-#' @return A list of two data frames. Detail contains un-averaged raw data.
-#'     Summary is averaged by distance.
+#' @param x Data frame containing sample data with required fields identified in
+#'   the following arguments.
+#' @param id Name of column in \code{x} containing numeric or character ID code
+#'   for each line or drillhole (e.g., bhid).
+#' @param pos Name of column in \code{x} containing the numeric downhole depth
+#'   to the samples (i.e., depth; \code{[to - from] / 2})
+#' @param group Name of column in \code{x} contaning the numeric or character
+#'   categorical code for the domains whose contacts are to be analysed.
+#' @param codes Numeric or character vector with two values identifying the two
+#'   specific groups in \code{group} that will have their contacts analysed.
+#' @param value Name of numeric column in \code{x} that will be analysed across
+#'   the contacts of \code{codes}.
+#' @param max_dist Numeric, scalar maximum contact evaluation distance (default
+#'   is 50 m)
+#' @return A list of two data frames: 'detail' contains un-averaged raw data and
+#'   'summary' is averaged by distance.
 #' @export
+#' @importFrom assertthat assert_that
 #' @importFrom dplyr arrange between case_when filter group_by lag lead mutate
-#'     select summarise
+#'   n select summarise
 #' @importFrom magrittr %>%
 #' @importFrom stats var
-#' @importFrom rlang enquo
+#' @importFrom rlang .data enquo quo_text
 #' @examples
-#' x <-  dplyr::mutate(dholes, depth = (to - from) / 2)
-#' contact_analysis(x, bhid, depth, domain, 1100, 1001, grade)
+#' dhdata <-  dplyr::mutate(dholes, depth = (to - from) / 2)
+#' domains <- c(1100, 1001)
+#' condata <- contact_analysis(dhdata, bhid, depth, domain, domains, grade, 20)
+#' plot(condata$summary$distance, condata$summary$mean, type = "l")
 contact_analysis <- function(
-    df, id, pos, type, type1, type2, value, max_dist = 50) {
+    x, id, pos, group, codes, value, max_dist = 50) {
 
   # Capture passed data frame fields as R code rather than literal values.
   id <- enquo(id)
   pos <- enquo(pos)
-  type <- enquo(type)
+  group <- enquo(group)
   value <- enquo(value)
 
-  # Process the input data frame.
-  data <- df %>%
+  # Assertions on arguments.
+  # `x` is a data frame.
+  assert_that(is.data.frame(x),
+    msg = "Argument `x` is not a data frame.")
+  # `x` contains all of the required columns.
+  assert_that(all(
+    c(quo_text(id), quo_text(pos), quo_text(group), quo_text(value)) %in%
+      colnames(x)),
+    msg = paste0(
+      "One of the required columns (",
+      quo_text(id), ",", quo_text(pos), ",", quo_text(group), ",",
+      quo_text(value),
+      ") not in the supplied data frame."))
+  # `pos` and `value` are numeric columns.
+  assert_that(is.numeric(x[[quo_text(pos)]]),
+    msg = "`pos` must be numeric.")
+  assert_that(is.numeric(x[[quo_text(value)]]),
+    msg = "`value` must be numeric.")
+  # `codes` is a two-element numeric vector.
+  assert_that(length(codes) == 2,
+    msg = "`codes` must contian two elements.")
+  assert_that(is.numeric(c(codes)),
+    msg = "`codes` must be a numeric vector.")
 
+  # Process the input data frame.
+  data <- x %>%
     # Sort by hole id and sample position.
     arrange(!!id, !!pos) %>%
-
     # Group by hole as analysis is per hole.
     group_by(!!id) %>%
-
     mutate(
       # Traverse along hole in increasing position (left to right) looking for
-      # type 1 to type 2 contacts.
+      # code 1 to code 2 contacts.
       t1_t2_lr = case_when(
-        # Find a type 1 code where the next code is type 2 set variable to
+        # Find a code 1 code where the next code is code 2 set variable to
         # difference in position.
-        !!type == type1 & lead(!!type, 1) == type2 ~ lead(!!pos, 1) - !!pos,
+        !!group == codes[1] & lead(!!group, 1) == codes[2] ~
+          lead(!!pos, 1) - !!pos,
         # Repeat above but for two samples ahead, then three, up to ten...
-        !!type == type1 & lead(!!type, 2) == type2 ~ lead(!!pos, 2) - !!pos,
-        !!type == type1 & lead(!!type, 3) == type2 ~ lead(!!pos, 3) - !!pos,
-        !!type == type1 & lead(!!type, 4) == type2 ~ lead(!!pos, 4) - !!pos,
-        !!type == type1 & lead(!!type, 5) == type2 ~ lead(!!pos, 5) - !!pos,
-        !!type == type1 & lead(!!type, 6) == type2 ~ lead(!!pos, 6) - !!pos,
-        !!type == type1 & lead(!!type, 7) == type2 ~ lead(!!pos, 7) - !!pos,
-        !!type == type1 & lead(!!type, 8) == type2 ~ lead(!!pos, 8) - !!pos,
-        !!type == type1 & lead(!!type, 9) == type2 ~ lead(!!pos, 9) - !!pos,
-        !!type == type1 & lead(!!type, 10) == type2 ~ lead(!!pos, 10) - !!pos
+        !!group == codes[1] & lead(!!group, 2) == codes[2] ~
+          lead(!!pos, 2) - !!pos,
+        !!group == codes[1] & lead(!!group, 3) == codes[2] ~
+          lead(!!pos, 3) - !!pos,
+        !!group == codes[1] & lead(!!group, 4) == codes[2] ~
+          lead(!!pos, 4) - !!pos,
+        !!group == codes[1] & lead(!!group, 5) == codes[2] ~
+          lead(!!pos, 5) - !!pos,
+        !!group == codes[1] & lead(!!group, 6) == codes[2] ~
+          lead(!!pos, 6) - !!pos,
+        !!group == codes[1] & lead(!!group, 7) == codes[2] ~
+          lead(!!pos, 7) - !!pos,
+        !!group == codes[1] & lead(!!group, 8) == codes[2] ~
+          lead(!!pos, 8) - !!pos,
+        !!group == codes[1] & lead(!!group, 9) == codes[2] ~
+          lead(!!pos, 9) - !!pos,
+        !!group == codes[1] & lead(!!group, 10) == codes[2] ~
+          lead(!!pos, 10) - !!pos
       ),
       # Now traverse back the other way (right to left) in the same fasion.
       t1_t2_rl = case_when(
-        !!type == type1 & lag(!!type, 1) == type2 ~ !!pos - lag(!!pos, 1),
-        !!type == type1 & lag(!!type, 2) == type2 ~ !!pos - lag(!!pos, 2),
-        !!type == type1 & lag(!!type, 3) == type2 ~ !!pos - lag(!!pos, 3),
-        !!type == type1 & lag(!!type, 4) == type2 ~ !!pos - lag(!!pos, 4),
-        !!type == type1 & lag(!!type, 5) == type2 ~ !!pos - lag(!!pos, 5),
-        !!type == type1 & lag(!!type, 6) == type2 ~ !!pos - lag(!!pos, 6),
-        !!type == type1 & lag(!!type, 7) == type2 ~ !!pos - lag(!!pos, 7),
-        !!type == type1 & lag(!!type, 8) == type2 ~ !!pos - lag(!!pos, 8),
-        !!type == type1 & lag(!!type, 9) == type2 ~ !!pos - lag(!!pos, 9),
-        !!type == type1 & lag(!!type, 10) == type2 ~ !!pos - lag(!!pos, 10)
+        !!group == codes[1] & lag(!!group, 1) == codes[2] ~
+          !!pos - lag(!!pos, 1),
+        !!group == codes[1] & lag(!!group, 2) == codes[2] ~
+          !!pos - lag(!!pos, 2),
+        !!group == codes[1] & lag(!!group, 3) == codes[2] ~
+          !!pos - lag(!!pos, 3),
+        !!group == codes[1] & lag(!!group, 4) == codes[2] ~
+          !!pos - lag(!!pos, 4),
+        !!group == codes[1] & lag(!!group, 5) == codes[2] ~
+          !!pos - lag(!!pos, 5),
+        !!group == codes[1] & lag(!!group, 6) == codes[2] ~
+          !!pos - lag(!!pos, 6),
+        !!group == codes[1] & lag(!!group, 7) == codes[2] ~
+          !!pos - lag(!!pos, 7),
+        !!group == codes[1] & lag(!!group, 8) == codes[2] ~
+          !!pos - lag(!!pos, 8),
+        !!group == codes[1] & lag(!!group, 9) == codes[2] ~
+          !!pos - lag(!!pos, 9),
+        !!group == codes[1] & lag(!!group, 10) == codes[2] ~
+          !!pos - lag(!!pos, 10)
       ),
-
       # Record the minimum distance from the two traversals.
-      t1_t2 = pmin(t1_t2_lr, t1_t2_rl, na.rm = TRUE),
-
-      # Traverse along hole in increasing position looking for type 2 to type 1
+      t1_t2 = pmin(.data$t1_t2_lr, .data$t1_t2_rl, na.rm = TRUE),
+      # Traverse along hole in increasing position looking for group 2 to group 1
       # contacts.
       t2_t1_lr = case_when(
-        !!type == type2 & lead(!!type, 1) == type1 ~ lead(!!pos, 1) - !!pos,
-        !!type == type2 & lead(!!type, 2) == type1 ~ lead(!!pos, 2) - !!pos,
-        !!type == type2 & lead(!!type, 3) == type1 ~ lead(!!pos, 3) - !!pos,
-        !!type == type2 & lead(!!type, 4) == type1 ~ lead(!!pos, 4) - !!pos,
-        !!type == type2 & lead(!!type, 5) == type1 ~ lead(!!pos, 5) - !!pos,
-        !!type == type2 & lead(!!type, 6) == type1 ~ lead(!!pos, 6) - !!pos,
-        !!type == type2 & lead(!!type, 7) == type1 ~ lead(!!pos, 7) - !!pos,
-        !!type == type2 & lead(!!type, 8) == type1 ~ lead(!!pos, 8) - !!pos,
-        !!type == type2 & lead(!!type, 9) == type1 ~ lead(!!pos, 9) - !!pos,
-        !!type == type2 & lead(!!type, 10) == type1 ~ lead(!!pos, 10) - !!pos
+        !!group == codes[2] & lead(!!group, 1) == codes[1] ~
+          lead(!!pos, 1) - !!pos,
+        !!group == codes[2] & lead(!!group, 2) == codes[1] ~
+          lead(!!pos, 2) - !!pos,
+        !!group == codes[2] & lead(!!group, 3) == codes[1] ~
+          lead(!!pos, 3) - !!pos,
+        !!group == codes[2] & lead(!!group, 4) == codes[1] ~
+          lead(!!pos, 4) - !!pos,
+        !!group == codes[2] & lead(!!group, 5) == codes[1] ~
+          lead(!!pos, 5) - !!pos,
+        !!group == codes[2] & lead(!!group, 6) == codes[1] ~
+          lead(!!pos, 6) - !!pos,
+        !!group == codes[2] & lead(!!group, 7) == codes[1] ~
+          lead(!!pos, 7) - !!pos,
+        !!group == codes[2] & lead(!!group, 8) == codes[1] ~
+          lead(!!pos, 8) - !!pos,
+        !!group == codes[2] & lead(!!group, 9) == codes[1] ~
+          lead(!!pos, 9) - !!pos,
+        !!group == codes[2] & lead(!!group, 10) == codes[1] ~
+          lead(!!pos, 10) - !!pos
       ),
       t2_t1_rl = case_when(
-        !!type == type2 & lag(!!type, 1) == type1 ~ !!pos - lag(!!pos, 1),
-        !!type == type2 & lag(!!type, 2) == type1 ~ !!pos - lag(!!pos, 2),
-        !!type == type2 & lag(!!type, 3) == type1 ~ !!pos - lag(!!pos, 3),
-        !!type == type2 & lag(!!type, 4) == type1 ~ !!pos - lag(!!pos, 4),
-        !!type == type2 & lag(!!type, 5) == type1 ~ !!pos - lag(!!pos, 5),
-        !!type == type2 & lag(!!type, 6) == type1 ~ !!pos - lag(!!pos, 6),
-        !!type == type2 & lag(!!type, 7) == type1 ~ !!pos - lag(!!pos, 7),
-        !!type == type2 & lag(!!type, 8) == type1 ~ !!pos - lag(!!pos, 8),
-        !!type == type2 & lag(!!type, 9) == type1 ~ !!pos - lag(!!pos, 9),
-        !!type == type2 & lag(!!type, 10) == type1 ~ !!pos - lag(!!pos, 10)
+        !!group == codes[2] & lag(!!group, 1) == codes[1] ~
+          !!pos - lag(!!pos, 1),
+        !!group == codes[2] & lag(!!group, 2) == codes[1] ~
+          !!pos - lag(!!pos, 2),
+        !!group == codes[2] & lag(!!group, 3) == codes[1] ~
+          !!pos - lag(!!pos, 3),
+        !!group == codes[2] & lag(!!group, 4) == codes[1] ~
+          !!pos - lag(!!pos, 4),
+        !!group == codes[2] & lag(!!group, 5) == codes[1] ~
+          !!pos - lag(!!pos, 5),
+        !!group == codes[2] & lag(!!group, 6) == codes[1] ~
+          !!pos - lag(!!pos, 6),
+        !!group == codes[2] & lag(!!group, 7) == codes[1] ~
+          !!pos - lag(!!pos, 7),
+        !!group == codes[2] & lag(!!group, 8) == codes[1] ~
+          !!pos - lag(!!pos, 8),
+        !!group == codes[2] & lag(!!group, 9) == codes[1] ~
+          !!pos - lag(!!pos, 9),
+        !!group == codes[2] & lag(!!group, 10) == codes[1] ~
+          !!pos - lag(!!pos, 10)
       ),
-      t2_t1 = pmin(t2_t1_lr, t2_t1_rl, na.rm = TRUE),
-
-      # Record contact distance. If type 1 to type 2 contact it is negative
+      t2_t1 = pmin(.data$t2_t1_lr, .data$t2_t1_rl, na.rm = TRUE),
+      # Record contact distance. If code 1 to code 2 contact it is negative
       # otherwise positive.
-      distance = ifelse(is.na(t1_t2), -t2_t1, t1_t2),
-
-      # Create a group field to identify type 1 or type 2 distance. Used mainly
+      distance = ifelse(is.na(.data$t1_t2), -.data$t2_t1, .data$t1_t2),
+      # Create a group field to identify code 1 or code 2 distance. Used mainly
       # for plotting.
       group = factor(
-        ifelse(is.na(t1_t2), type2, type1),
-        levels = c(type2, type1), ordered = TRUE)
+        ifelse(is.na(.data$t1_t2), codes[2], codes[1]),
+        levels = c(codes[2], codes[1]), ordered = TRUE)
     ) %>%
-
     # Remove temporary fields.
-    select(-c(t1_t2_lr, t1_t2_rl, t1_t2, t2_t1_lr, t2_t1_rl, t2_t1)) %>%
-
+    select(-c(.data$t1_t2_lr, .data$t1_t2_rl, .data$t1_t2, .data$t2_t1_lr,
+      .data$t2_t1_rl, .data$t2_t1)) %>%
     # Remove NA distances (for types other than 1 or 2). Filter to maximum
     # distance.
-    filter(!is.na(distance), between(distance, -max_dist, max_dist))
+    filter(!is.na(.data$distance), between(.data$distance, -max_dist, max_dist))
 
   # Create averaged data per distance (distance rounded to nearest 1).
   sum_data <- data %>%
-    mutate(distance = round(distance, 0)) %>%
-    group_by(distance, group) %>%
+    mutate(distance = round(.data$distance, 0)) %>%
+    group_by(.data$distance, .data$group) %>%
     summarise(mean = mean(!!value), var = var(!!value), n = n())
 
   return(list(detail = data, summary = sum_data))
