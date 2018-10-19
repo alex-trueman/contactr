@@ -13,9 +13,9 @@ LazyData: true
 Depends:
     R (>= 3.5.0)
 Imports:
-    assertthat,
-    dplyr,
-    magrittr,
-    rlang,
+    assertthat (>= 0.2.0),
+    dplyr (>= 0.7.0),
+    magrittr (>= 1.5),
+    rlang (>= 0.2.0),
     stats
 RoxygenNote: 6.1.0
