@@ -6,4 +6,4 @@ dholes <- readr::read_csv(
       "domain", "grade"),
   col_types = "cdddddddddd"
 )
-devtools::use_data(dholes, overwrite = TRUE, compress = 'xz')
+usethis::use_data(dholes, overwrite = TRUE, compress = 'xz')
