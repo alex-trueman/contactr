@@ -38,9 +38,10 @@ specified value (e.g., grade) with distance eiter side of the contact between
 two domins.
 }
 \examples{
-x <-  dplyr::mutate(dholes, depth = (to - from) / 2)
+dhdata <-  dplyr::mutate(dholes, depth = (to - from) / 2)
 domains <- c(1100, 1001)
-contact_analysis(x, bhid, depth, domain, domains, grade, 20)
+condata <- contact_analysis(dhdata, bhid, depth, domain, domains, grade, 20)
+plot(condata$summary$distance, condata$summary$mean, type = "l")
 }
 \author{
 Alex M. Trueman, 2018-03-21
