@@ -55,5 +55,10 @@ records in 371 drillholes with 13 valid domain contact pairings. This dataset
 takes <50 seconds to process on a fast laptop (2018 i9 CPU).
 }
 \examples{
-contact_data(dholes, grade, max_dist = 20)
+# Smaller dataset for speed.
+dholes_sub <- dholes[dholes$domain < 4000,]
+ca <- contact_data(dholes_sub, grade, max_dist = 20)
+
+# Extract only certain contacts from contact data.
+ca_1100 <- purrr::map(ca, ~dplyr::filter(.x, grepl("1100", contact)))
 }

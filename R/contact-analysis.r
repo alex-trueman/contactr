@@ -65,7 +65,12 @@ interval_mid <- function(x, dp = 1) {
 #' @importFrom rlang !! .data enquo quo_name
 #' @importFrom utils combn
 #' @examples
-#' contact_data(dholes, grade, max_dist = 20)
+#' # Smaller dataset for speed.
+#' dholes_sub <- dholes[dholes$domain < 4000,]
+#' ca <- contact_data(dholes_sub, grade, max_dist = 20)
+#'
+#' # Extract only certain contacts from contact data.
+#' ca_1100 <- purrr::map(ca, ~dplyr::filter(.x, grepl("1100", contact)))
 contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
   x = x, y = y, z= z, domain = domain, max_dist = 15, min_samp = 5) {
 
