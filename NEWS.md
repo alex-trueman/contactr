@@ -2,6 +2,10 @@
 
 * First release
 
-# 0.1.1
+# 0.2
 
-* Add data and example
+* Rewrite of contact analysis data function. Avoids lengthy case_when
+  but uses nested for loops.
+* Add new function for producing basic plot.
+* Add example dataset 'dholes' used in function documentation examples.
+* Add code of conduct for contributions.
