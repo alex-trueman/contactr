@@ -1,10 +1,10 @@
 Package: contactr
 Type: Package
 Title: Analyse Trend Across Contacts in Drillholes
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person("Alex", "Trueman", email = "amt4158@gmail.com", role = c("aut", "cre"))
-Description: Analyse the chnage in mean grade by distance from a categorical
-    field's contact.
+Description: Analyse the change in mean grade by distance from paired categorical
+    field contacts.
 URL: https://github.com/truemoid/contactr
 BugReports: https://github.com/truemoid/contactr
 License: MIT + file LICENSE
@@ -15,7 +15,9 @@ Depends:
 Imports:
     assertthat (>= 0.2.0),
     dplyr (>= 0.7.0),
+    ggplot2 (>= 3.0),
     magrittr (>= 1.5),
     rlang (>= 0.2.0),
-    stats
+    stats,
+    utils
 RoxygenNote: 6.1.0
