@@ -13,3 +13,4 @@
 0.2.1
 
 * Improved example for `contact_data`.
+* Bug fix: correct reporting of number fo samples.

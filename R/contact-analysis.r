@@ -228,16 +228,11 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
     tempdataj[,"domain"] <- domain_pairs[2, dom]
     tempdata <- rbind(tempdatai, tempdataj)
     # Create a contact label with the total number of samples.
+    ni <- nrow(tempdata[tempdata[["domain"]] == domain_pairs[1, dom], ])
+    nj <- nrow(tempdata[tempdata[["domain"]] == domain_pairs[2, dom], ])
     tempdata[, "contact"] <-
       paste0(
-        domain_pairs[1, dom],
-        "(n=",
-        nrow(tempdata[tempdata[[domain_str]] == domain_pairs[1, dom], ]),
-        ") : ",
-        domain_pairs[2, dom],
-        "(n=",
-        nrow(tempdata[tempdata[[domain_str]] == domain_pairs[2, dom], ]),
-        ")"
+        domain_pairs[1, dom], "(", ni, "):", domain_pairs[2, dom], "(", nj, ")"
       )
     if(cnt == 1) {
       cdata_detail <- tempdata
