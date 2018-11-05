@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # `contactr`: Drillhole contact analysis
 
 A contact is the meeting point/plane of two different geological units. A geological unit in this case can be any characteristic such as rock type, alteration type, weathering type, or, more frequently, grade estimation domains. Contact analysis is an examination of the behaviour of one or more continuous variables (e.g., gold grade) as they approach a contact. Usually we look at the mean value of the variable as it approaches a contact.
