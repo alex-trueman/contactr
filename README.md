@@ -1,5 +1,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[![Project Status: WIP ? Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+
+[![minimal R version](https://img.shields.io/badge/R%3E%3D-3.5.0-6666ff.svg)](https://cran.r-project.org/)
+
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/contactr)](https://cran.r-project.org/package=contactr)
+
+[![packageversion](https://img.shields.io/badge/Package%20version-0.2.0-orange.svg?style=flat-square)](commits/master)
+
 # `contactr`: Drillhole contact analysis
 
 A contact is the meeting point/plane of two different geological units. A geological unit in this case can be any characteristic such as rock type, alteration type, weathering type, or, more frequently, grade estimation domains. Contact analysis is an examination of the behaviour of one or more continuous variables (e.g., gold grade) as they approach a contact. Usually we look at the mean value of the variable as it approaches a contact.
