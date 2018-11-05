@@ -63,6 +63,7 @@ interval_mid <- function(x, dp = 1) {
 #' @importFrom dplyr group_by select mutate summarise
 #' @importFrom magrittr %<>% %>%
 #' @importFrom rlang !! .data enquo quo_name
+#' @importFrom stats na.omit
 #' @importFrom utils combn
 #' @examples
 #' # Smaller dataset for speed.
@@ -123,16 +124,17 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
 
   domain_pairs <- combn(sort(unique(df[[domain_str]])), 2)
   all_holes <- sort(unique(df[[bhid_str]]))
+  sample_count <- nrow(df)
   cnt <- 0
 
   for (dom in 1:ncol(domain_pairs)) {
     # Reset for each domain pairing.
     counti <- 0
     countj <- 0
-    disti <- c()
-    valuei <- c()
-    distj <- c()
-    valuej <- c()
+    disti <- rep(NA_real_, sample_count)
+    valuei <- rep(NA_real_, sample_count)
+    distj <- rep(NA_real_, sample_count)
+    valuej <- rep(NA_real_, sample_count)
     for (hole in 1:length(all_holes)) {
       samples <- df[df[[bhid_str]] == all_holes[hole],]
       samples <- samples[order(samples[[from_str]], samples[[to_str]]),]
@@ -226,7 +228,7 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
     tempdatai[,"domain"] <- domain_pairs[1, dom]
     tempdataj <- data.frame(dist = distj, value = valuej)
     tempdataj[,"domain"] <- domain_pairs[2, dom]
-    tempdata <- rbind(tempdatai, tempdataj)
+    tempdata <- na.omit(rbind(tempdatai, tempdataj))
     # Create a contact label with the total number of samples.
     ni <- nrow(tempdata[tempdata[["domain"]] == domain_pairs[1, dom], ])
     nj <- nrow(tempdata[tempdata[["domain"]] == domain_pairs[2, dom], ])
