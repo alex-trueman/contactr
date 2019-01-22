@@ -10,7 +10,8 @@
 * Add example dataset 'dholes' used in function documentation examples.
 * Add code of conduct for contributions.
 
-0.2.1
+# 0.2.1
 
 * Improved example for `contact_data`.
-* Bug fix: correct reporting of number fo samples.
+* Bug fix: correct reporting of number of samples.
+* Make sure 2 samples in drillhole.
