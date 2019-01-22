@@ -139,6 +139,8 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
       samples <- df[df[[bhid_str]] == all_holes[hole],]
       samples <- samples[order(samples[[from_str]], samples[[to_str]]),]
       count_samples <- nrow(samples)
+      # Make sure at least 2 samples in the drillhole.
+      if(count_samples < 2) next
       for (sample in 2:count_samples) {
         this_samp <- samples[sample,]
         last_samp <- samples[sample - 1,]
