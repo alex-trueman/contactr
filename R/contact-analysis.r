@@ -50,6 +50,8 @@ interval_mid <- function(x, dp = 1) {
 #' @param domain Name of the column in \code{df} containing the character or
 #'   numeric categorical codes for domains across which contact analysis will be
 #'   performed (default \code{domain}).
+#' @param pairs Matrix of domain pairs to be used in the contact analysis.
+#'   Organized in columns of pairs with two rows each.
 #' @param max_dist Positive numeric scalar for the maximum contact distance to
 #'   be calculated (default \code{15}).
 #' @param min_samp Positive integer scalar for the minimum number of samples on
@@ -73,7 +75,8 @@ interval_mid <- function(x, dp = 1) {
 #' # Extract only certain contacts from contact data.
 #' ca_1100 <- purrr::map(ca, ~dplyr::filter(.x, grepl("1100", contact)))
 contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
-  x = x, y = y, z= z, domain = domain, max_dist = 15, min_samp = 5) {
+  x = x, y = y, z= z, domain = domain, max_dist = 15, min_samp = 5,
+  pairs = NULL) {
 
   grade <- enquo(grade)
   grade_str <- quo_name(grade)
@@ -121,13 +124,11 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
     msg = "`min_samp` must be a whole number")
   assert_that(min_samp >= 1, msg = "`min_samp` must be >= 1")
 
-
-  domain_pairs <- combn(sort(unique(df[[domain_str]])), 2)
   all_holes <- sort(unique(df[[bhid_str]]))
   sample_count <- nrow(df)
   cnt <- 0
 
-  for (dom in 1:ncol(domain_pairs)) {
+  for (dom in 1:ncol(pairs)) {
     # Reset for each domain pairing.
     counti <- 0
     countj <- 0
@@ -144,14 +145,14 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
       for (sample in 2:count_samples) {
         this_samp <- samples[sample,]
         last_samp <- samples[sample - 1,]
-        if (this_samp[[domain_str]] == domain_pairs[2, dom] &
-            last_samp[[domain_str]] == domain_pairs[1, dom]) {
+        if (this_samp[[domain_str]] == pairs[2, dom] &
+            last_samp[[domain_str]] == pairs[1, dom]) {
           xc <- (this_samp[[x_str]] + last_samp[[x_str]]) * 0.5
           yc <- (this_samp[[y_str]] + last_samp[[y_str]]) * 0.5
           zc <- (this_samp[[z_str]] + last_samp[[z_str]]) * 0.5
           for (consamp in (sample - 1):1) {
             con_samp <- samples[consamp,]
-            if (con_samp[[domain_str]] == domain_pairs[1, dom]) {
+            if (con_samp[[domain_str]] == pairs[1, dom]) {
               d <-
                 sqrt(
                   (con_samp[[x_str]] - xc)^2 *
@@ -167,7 +168,7 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
           }
           for (consamp in sample:count_samples) {
             con_samp <- samples[consamp,]
-            if (con_samp[[domain_str]] == domain_pairs[2, dom]) {
+            if (con_samp[[domain_str]] == pairs[2, dom]) {
               d <-
                 sqrt(
                   (con_samp[[x_str]] - xc)^2 *
@@ -182,14 +183,14 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
             }
           }
         }
-        if (this_samp[[domain_str]] == domain_pairs[1, dom] &
-            last_samp[[domain_str]] == domain_pairs[2, dom]) {
+        if (this_samp[[domain_str]] == pairs[1, dom] &
+            last_samp[[domain_str]] == pairs[2, dom]) {
           xc <- (this_samp[[x_str]] + last_samp[[x_str]]) * 0.5
           yc <- (this_samp[[y_str]] + last_samp[[y_str]]) * 0.5
           zc <- (this_samp[[z_str]] + last_samp[[z_str]]) * 0.5
           for (consamp in (sample - 1):1) {
             con_samp <- samples[consamp,]
-            if (con_samp[[domain_str]] == domain_pairs[2, dom]) {
+            if (con_samp[[domain_str]] == pairs[2, dom]) {
               d <-
                 sqrt(
                   (con_samp[[x_str]] - xc)^2 *
@@ -205,7 +206,7 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
           }
           for (consamp in sample:count_samples) {
             con_samp <- samples[consamp,]
-            if (con_samp[[domain_str]] == domain_pairs[1, dom]) {
+            if (con_samp[[domain_str]] == pairs[1, dom]) {
               d <-
                 sqrt(
                   (con_samp[[x_str]] - xc)^2 *
@@ -227,16 +228,16 @@ contact_data <- function(df, grade, bhid = bhid, from = from, to = to,
     # Build the detailed dataframe.
     cnt <- cnt + 1
     tempdatai <- data.frame(dist = -disti, value = valuei)
-    tempdatai[,"domain"] <- domain_pairs[1, dom]
+    tempdatai[,"domain"] <- pairs[1, dom]
     tempdataj <- data.frame(dist = distj, value = valuej)
-    tempdataj[,"domain"] <- domain_pairs[2, dom]
+    tempdataj[,"domain"] <- pairs[2, dom]
     tempdata <- na.omit(rbind(tempdatai, tempdataj))
     # Create a contact label with the total number of samples.
-    ni <- nrow(tempdata[tempdata[["domain"]] == domain_pairs[1, dom], ])
-    nj <- nrow(tempdata[tempdata[["domain"]] == domain_pairs[2, dom], ])
+    ni <- nrow(tempdata[tempdata[["domain"]] == pairs[1, dom], ])
+    nj <- nrow(tempdata[tempdata[["domain"]] == pairs[2, dom], ])
     tempdata[, "contact"] <-
       paste0(
-        domain_pairs[1, dom], "(", ni, "):", domain_pairs[2, dom], "(", nj, ")"
+        pairs[1, dom], "(", ni, "):", pairs[2, dom], "(", nj, ")"
       )
     if(cnt == 1) {
       cdata_detail <- tempdata
