@@ -1,7 +1,7 @@
 Package: contactr
 Type: Package
 Title: Analyse Trend Across Contacts in Drillholes
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: person("Alex", "Trueman", email = "amt4158@gmail.com", role = c("aut", "cre"))
 Description: Analyse the change in mean grade by distance from paired categorical
     field contacts.
