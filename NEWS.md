@@ -15,3 +15,5 @@
 * Improved example for `contact_data`.
 * Bug fix: correct reporting of number of samples.
 * Make sure 2 samples in drillhole.
+* `contact_data` now requires a matrix of contact pairs rather than evaluating
+all possible pairs, which is very slow.
